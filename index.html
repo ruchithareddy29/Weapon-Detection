@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weapon Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: url("{{ url_for('static', filename='back.png') }}") no-repeat center center fixed;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weapon Detection</h1>
+        <form id="uploadForm">
+            <input type="file" name="image" id="imageInput" accept="image/*" required>
+            <button type="submit">Detect Weapon</button>
+        </form>
+        <div id="result">
+            <img id="preview" src="" alt="" hidden>
+            <h2 id="prediction"></h2>
+        </div>
+        <audio id="alertSound" src="{{ url_for('static', filename='alert-33762 (mp3cut.net).mp3') }}"></audio>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const preview = document.getElementById('preview');
+        const prediction = document.getElementById('prediction');
+        const alertSound = document.getElementById('alertSound');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('imageInput');
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            prediction.textContent = "Detected: " + data.prediction;
+            preview.src = data.image_url;
+            preview.hidden = false;
+
+            if (data.prediction === 'gun' || data.prediction === 'knife') {
+                alertSound.play();
+            }
+        });
+    </script>
+</body>
+</html>
